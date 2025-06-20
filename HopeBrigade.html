@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hope Brigade - Disaster Response Network</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            light: '#7e7df0',
+                            DEFAULT: '#5D5CDE',
+                            dark: '#4a49b1'
+                        },
+                        secondary: {
+                            light: '#ff7e82',
+                            DEFAULT: '#FF5A5F',
+                            dark: '#e5484d'
+                        },
+                        success: {
+                            light: '#4ade80',
+                            DEFAULT: '#22c55e',
+                            dark: '#16a34a'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .hero-wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            line-height: 0;
+            z-index: 0;
+        }
+
+        .hero-wave svg {
+            position: relative;
+            display: block;
+            width: calc(100% + 1.3px);
+            height: 80px;
+        }
+
+        .hero-wave .shape-fill {
+            fill: #FFFFFF;
+        }
+
+        .dark .hero-wave .shape-fill {
+            fill: #181818;
+        }
+
+        @keyframes pulse-alert {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .alert-pulse {
+            animation: pulse-alert 2s infinite;
+        }
+
+        .alert-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #FF5A5F;
+        }
+
+        .dark input, .dark textarea, .dark select {
+            background-color: #2d2d2d;
+            color: #fff;
+            border-color: #3f3f3f;
+        }
+
+        .dark input::placeholder, .dark textarea::placeholder {
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased transition-colors duration-300">
+    <!-- Dark Mode Detection -->
+    <script>
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+    </script>
+
+    <div class="min-h-screen flex flex-col bg-white dark:bg-[#181818] dark:text-white">
+        <!-- Header/Navigation -->
+        <header class="sticky top-0 z-50 bg-white dark:bg-[#181818] shadow-md dark:shadow-gray-800">
+            <div class="container mx-auto px-4 py-3">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-hands-helping text-primary-dark dark:text-primary-light text-2xl"></i>
+                        <span class="text-xl font-bold text-gray-800 dark:text-white">Hope Brigade</span>
+                    </div>
+                    
+                    <nav class="hidden md:flex space-x-6">
+                        <a href="#home" class="text-gray-700 dark:text-gray-200 hover:text-primary-dark dark:hover:text-primary-light">Home</a>
+                        <a href="#get-help" class="text-gray-700 dark:text-gray-200 hover:text-primary-dark dark:hover:text-primary-light">Get Help</a>
+                        <a href="#offer-help" class="text-gray-700 dark:text-gray-200 hover:text-primary-dark dark:hover:text-primary-light">Offer Help</a>
+                        <a href="#alerts" class="text-gray-700 dark:text-gray-200 hover:text-primary-dark dark:hover:text-primary-light relative">
+                            Alerts
+                            <span id="alert-badge" class="alert-badge hidden"></span>
+                        </a>
+                        <a href="#recovery" class="text-gray-700 dark:text-gray-200 hover:text-primary-dark dark:hover:text-primary-light">Recovery</a>
+                    </nav>
+
+                    <div class="md:hidden relative">
+                        <button id="menu-toggle" class="text-gray-700 dark:text-gray-200 hover:text-primary-dark dark:hover:text-primary-light">
+                            <i class="fas fa-bars text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Mobile Menu -->
+                <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4">
+                    <nav class="flex flex-col space-y-3">
+                        <a href="#home" class="text-gray-700 dark:text-gray-200 hover:text-primary-dark dark:hover:text-primary-light">Home</a>
+                        <a href="#get-help" class="text-gray-700 dark:text-gray-200 hover:text-primary-dark dark:hover:text-primary-light">Get Help</a>
+                        <a href="#offer-help" class="text-gray-700 dark:text-gray-200 hover:text-primary-dark dark:hover:text-primary-light">Offer Help</a>
+                        <a href="#alerts" class="text-gray-700 dark:text-gray-200 hover:text-primary-dark dark:hover:text-primary-light relative inline-block">
+                            Alerts 
+                            <span class="alert-badge hidden" id="mobile-alert-badge"></span>
+                        </a>
+                        <a href="#recovery" class="text-gray-700 dark:text-gray-200 hover:text-primary-dark dark:hover:text-primary-light">Recovery</a>
+                    </nav>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-grow">
+            <!-- Hero Section -->
+            <section id="home" class="relative bg-gradient-to-r from-primary-dark to-primary pt-16 pb-24 md:pt-24 md:pb-32">
+                <div class="container mx-auto px-6 relative z-10">
+                    <div class="max-w-3xl">
+                        <h1 class="text-4xl md:text-5xl font-bold text-white mb-6">Connecting Hearts During Disasters</h1>
+                        <p class="text-lg md:text-xl text-white/90 mb-8">Hope Brigade brings together those in need with those who can help. Join our network of compassionate volunteers to support communities affected by natural disasters.</p>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <a href="#get-help" class="inline-block py-3 px-6 bg-secondary hover:bg-secondary-dark text-white font-semibold rounded-lg transition shadow-lg hover:shadow-xl text-center">I Need Help</a>
+                            <a href="#offer-help" class="inline-block py-3 px-6 bg-white hover:bg-gray-100 text-primary-dark font-semibold rounded-lg transition shadow-lg hover:shadow-xl text-center">I Want to Help</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-wave">
+                    <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+                        <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path>
+                    </svg>
+                </div>
+            </section>
+
+            <!-- How It Works Section -->
+            <section class="py-16 bg-white dark:bg-[#181818]">
+                <div class="container mx-auto px-6">
+                    <h2 class="text-3xl font-bold text-center mb-12 text-gray-800 dark:text-white">How Hope Brigade Works</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div class="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg shadow-md text-center">
+                            <div class="w-16 h-16 bg-primary-light/20 dark:bg-primary-dark/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-bullhorn text-primary-dark dark:text-primary-light text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-3 text-gray-800 dark:text-white">Alert System</h3>
+                            <p class="text-gray-600 dark:text-gray-300">Receive real-time alerts about natural disasters in your area and stay informed about evacuation plans.</p>
+                        </div>
+                        
+                        <div class="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg shadow-md text-center">
+                            <div class="w-16 h-16 bg-primary-light/20 dark:bg-primary-dark/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-hands-helping text-primary-dark dark:text-primary-light text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-3 text-gray-800 dark:text-white">Connect & Help</h3>
+                            <p class="text-gray-600 dark:text-gray-300">Our platform connects those affected by disasters with nearby volunteers willing to provide assistance.</p>
+                        </div>
+                        
+                        <div class="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg shadow-md text-center">
+                            <div class="w-16 h-16 bg-primary-light/20 dark:bg-primary-dark/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-home text-primary-dark dark:text-primary-light text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-3 text-gray-800 dark:text-white">Recovery & Rebuild</h3>
+                            <p class="text-gray-600 dark:text-gray-300">Support long-term recovery efforts by participating in community rebuilding projects after disasters.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Get Help Section -->
+            <section id="get-help" class="py-16 bg-gray-50 dark:bg-gray-900">
+                <div class="container mx-auto px-6">
+                    <div class="max-w-3xl mx-auto">
+                        <h2 class="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-white">Request Assistance</h2>
+                        <p class="text-center text-gray-600 dark:text-gray-300 mb-8">If you've been affected by a natural disaster and need help, fill out this form to connect with volunteers in your area.</p>
+                        
+                        <form id="help-request-form" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 md:p-8">
+                            <div class="mb-6">
+                                <label for="name" class="block text-gray-700 dark:text-gray-200 font-medium mb-2">Full Name</label>
+                                <input type="text" id="name" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Enter your full name" required>
+                            </div>
+                            
+                            <div class="mb-6">
+                                <label for="contact" class="block text-gray-700 dark:text-gray-200 font-medium mb-2">Contact Number</label>
+                                <input type="tel" id="contact" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Enter your phone number" required>
+                            </div>
+                            
+                            <div class="mb-6">
+                                <label for="location" class="block text-gray-700 dark:text-gray-200 font-medium mb-2">Location</label>
+                                <input type="text" id="location" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-primary" placeholder="City, State" required>
+                            </div>
+                            
+                            <div class="mb-6">
+                                <label for="disaster-type" class="block text-gray-700 dark:text-gray-200 font-medium mb-2">Type of Disaster</label>
+                                <select id="disaster-type" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                    <option value="" disabled selected>Select disaster type</option>
+                                    <option value="flood">Flood</option>
+                                    <option value="earthquake">Earthquake</option>
+                                    <option value="hurricane">Hurricane/Cyclone</option>
+                                    <option value="wildfire">Wildfire</option>
+                                    <option value="tornado">Tornado</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-6">
+                                <label for="help-needed" class="block text-gray-700 dark:text-gray-200 font-medium mb-2">Help Needed</label>
+                                <textarea id="help-needed" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Describe what kind of help you need (shelter, food, medical, etc.)" required></textarea>
+                            </div>
+                            
+                            <div class="mb-6">
+                                <label class="block text-gray-700 dark:text-gray-200 font-medium mb-2">Urgency Level</label>
+                                <div class="flex items-center space-x-4">
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="urgency" value="low" class="text-primary">
+                                        <span class="ml-2 text-gray-700 dark:text-gray-300">Low</span>
+                                    </label>
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="urgency" value="medium" class="text-primary" checked>
+                                        <span class="ml-2 text-gray-700 dark:text-gray-300">Medium</span>
+                                    </label>
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="urgency" value="high" class="text-primary">
+                                        <span class="ml-2 text-gray-700 dark:text-gray-300">High</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="w-full py-3 px-6 bg-primary hover:bg-primary-dark text-white font-semibold rounded-lg transition shadow-lg hover:shadow-xl">Submit Request</button>
+                        </form>
+                        
+                        <div id="help-confirmation" class="hidden mt-6 p-4 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-check-circle text-green-500 mr-3 text-xl"></i>
+                                <span class="font-medium">Your request has been submitted successfully! Volunteers in your area will be notified.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Volunteer Section -->
+            <section id="offer-help" class="py-16 bg-white dark:bg-[#181818]">
+                <div class="container mx-auto px-6">
+                    <div class="max-w-3xl mx-auto">
+                        <h2 class="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-white">Become a Volunteer</h2>
+                        <p class="text-center text-gray-600 dark:text-gray-300 mb-8">Join our network of volunteers ready to help during disasters. Your skills and support can make a difference in someone's life.</p>
+                        
+                        <form id="volunteer-form" class="bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md p-6 md:p-8">
+                            <div class="mb-6">
+                                <label for="volunteer-name" class="block text-gray-700 dark:text-gray-200 font-medium mb-2">Full Name</label>
+                                <input type="text" id="volunteer-name" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Enter your full name" required>
+                            </div>
+                            
+                            <div class="mb-6">
+                                <label for="volunteer-email" class="block text-gray-700 dark:text-gray-200 font-medium mb-2">Email Address</label>
+                                <input type="email" id="volunteer-email" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Enter your email" required>
+                            </div>
+                            
+                            <div class="mb-6">
+                                <label for="volunteer-phone" class="block text-gray-700 dark:text-gray-200 font-medium mb-2">Phone Number</label>
+                                <input type="tel" id="volunteer-phone" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Enter your phone number" required>
+                            </div>
+                            
+                            <div class="mb-6">
+                                <label for="volunteer-location" class="block text-gray-700 dark:text-gray-200 font-medium mb-2">Location</label>
+                                <input type="text" id="volunteer-location" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-primary" placeholder="City, State" required>
+                            </div>
+                            
+                            <div class="mb-6">
+                                <label for="skills" class="block text-gray-700 dark:text-gray-200 font-medium mb-2">Skills & Resources</label>
+                                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                    <label class="inline-flex items-center">
+                                        <input type="checkbox" name="skills" value="medical" class="text-primary">
+                                        <span class="ml-2 text-gray-700 dark:text-gray-300">Medical</span>
+                                    </label>
+                                    <label class="inline-flex items-center">
+                                        <input type="checkbox" name="skills" value="construction" class="text-primary">
+                                        <span class="ml-2 text-gray-700 dark:text-gray-300">Construction</span>
+                                    </label>
+                                    <label class="inline-flex items-center">
+                                        <input type="checkbox" name="skills" value="transportation" class="text-primary">
+                                        <span class="ml-2 text-gray-700 dark:text-gray-300">Transportation</span>
+                                    </label>
+                                    <label class="inline-flex items-center">
+                                        <input type="checkbox" name="skills" value="cooking" class="text-primary">
+                                        <span class="ml-2 text-gray-700 dark:text-gray-300">Cooking</span>
+                                    </label>
+                                    <label class="inline-flex items-center">
+                                        <input type="checkbox" name="skills" value="counseling" class="text-primary">
+                                        <span class="ml-2 text-gray-700 dark:text-gray-300">Counseling</span>
+                                    </label>
+                                    <label class="inline-flex items-center">
+                                        <input type="checkbox" name="skills" value="shelter" class="text-primary">
+                                        <span class="ml-2 text-gray-700 dark:text-gray-300">Shelter</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-6">
+                                <label for="availability" class="block text-gray-700 dark:text-gray-200 font-medium mb-2">Availability</label>
+                                <select id="availability" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                    <option value="" disabled selected>Select your availability</option>
+                                    <option value="weekdays">Weekdays</option>
+                                    <option value="weekends">Weekends</option>
+                                    <option value="anytime">Anytime</option>
+                                    <option value="emergency">Emergency Only</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-6">
+                                <label for="additional-info" class="block text-gray-700 dark:text-gray-200 font-medium mb-2">Additional Information</label>
+                                <textarea id="additional-info" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Any additional skills or information you'd like to share"></textarea>
+                            </div>
+                            
+                            <button type="submit" class="w-full py-3 px-6 bg-primary hover:bg-primary-dark text-white font-semibold rounded-lg transition shadow-lg hover:shadow-xl">Register as Volunteer</button>
+                        </form>
+                        
+                        <div id="volunteer-confirmation" class="hidden mt-6 p-4 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-check-circle text-green-500 mr-3 text-xl"></i>
+                                <span class="font-medium">Thank you for volunteering! You'll be notified when help is needed in your area.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Alerts Section -->
+            <section id="alerts" class="py-16 bg-gray-50 dark:bg-gray-900">
+                <div class="container mx-auto px-6">
+                    <h2 class="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-white">Disaster Alerts</h2>
+                    <p class="text-center text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">Stay informed about natural disasters and emergencies in your area. Subscribe to receive real-time alerts.</p>
+                    
+                    <div class="max-w-4xl mx-auto mb-12">
+                        <div class="flex flex-col md:flex-row mb-6">
+                            <input type="text" id="alert-location" class="flex-grow px-4 py-3 rounded-l-lg text-base md:rounded-r-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Enter your location to receive alerts">
+                            <button id="subscribe-alerts" class="mt-3 md:mt-0 px-6 py-3 bg-primary hover:bg-primary-dark text-white font-semibold rounded-lg md:rounded-l-none transition">Subscribe</button>
+                        </div>
+                        
+                        <div id="alert-confirmation" class="hidden p-4 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-check-circle text-green-500 mr-3 text-xl"></i>
+                                <span class="font-medium">You've successfully subscribed to alerts for <span id="alert-location-confirm"></span>!</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="current-alerts" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Demo alerts will be populated by JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Recovery & Redevelopment Section -->
+            <section id="recovery" class="py-16 bg-white dark:bg-[#181818]">
+                <div class="container mx-auto px-6">
+                    <h2 class="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-white">Recovery & Redevelopment Projects</h2>
+                    <p class="text-center text-gray-600 dark:text-gray-300 mb-12 max-w-3xl mx-auto">Long-term recovery is essential after disasters. Join or support these ongoing redevelopment projects.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8" id="recovery-projects">
+                        <!-- Projects will be populated by JavaScript -->
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-gray-900 text-white py-12">
+            <div class="container mx-auto px-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4">Hope Brigade</h3>
+                        <p class="text-gray-400">Bringing hope and help during times of disaster. Connecting communities, volunteers, and resources when they're needed most.</p>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+                        <ul class="space-y-2">
+                            <li><a href="#home" class="text-gray-400 hover:text-white transition">Home</a></li>
+                            <li><a href="#get-help" class="text-gray-400 hover:text-white transition">Get Help</a></li>
+                            <li><a href="#offer-help" class="text-gray-400 hover:text-white transition">Volunteer</a></li>
+                            <li><a href="#alerts" class="text-gray-400 hover:text-white transition">Alerts</a></li>
+                            <li><a href="#recovery" class="text-gray-400 hover:text-white transition">Recovery</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Resources</h3>
+                        <ul class="space-y-2">
+                            <li><a href="#" class="text-gray-400 hover:text-white transition">Disaster Preparedness</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white transition">Emergency Contacts</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white transition">Relief Organizations</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white transition">Donation Centers</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Contact Us</h3>
+                        <ul class="space-y-2">
+                            <li class="flex items-center text-gray-400">
+                                <i class="fas fa-envelope mr-2 w-5 text-center"></i>
+                                <span>help@hopebrigade.org</span>
+                            </li>
+                            <li class="flex items-center text-gray-400">
+                                <i class="fas fa-phone mr-2 w-5 text-center"></i>
+                                <span>+91 9999999</span>
+                            </li>
+                            <li class="flex items-center text-gray-400">
+                                <i class="fas fa-map-marker-alt mr-2 w-5 text-center"></i>
+                                <span>Sector 28, Gandhinagar, Gujarat, IN</span>
+                            </li>
+                        </ul>
+                        <div class="flex space-x-4 mt-4">
+                            <a href="#" class="text-gray-400 hover:text-white transition">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="#" class="text-gray-400 hover:text-white transition">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="#" class="text-gray-400 hover:text-white transition">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a href="#" class="text-gray-400 hover:text-white transition">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="border-t border-gray-800 mt-12 pt-8 text-center text-gray-500">
+                    <p>© 2023 Hope Brigade. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Mobile menu toggle
+        const menuToggle = document.getElementById('menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        menuToggle.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // Help Request Form Submission
+        const helpRequestForm = document.getElementById('help-request-form');
+        const helpConfirmation = document.getElementById('help-confirmation');
+        
+        helpRequestForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            // In a real app, you would send the form data to a server
+            // For demo purposes, just show the confirmation message
+            helpRequestForm.reset();
+            helpConfirmation.classList.remove('hidden');
+            
+            // Hide confirmation after 5 seconds
+            setTimeout(() => {
+                helpConfirmation.classList.add('hidden');
+            }, 5000);
+        });
+        
+        // Volunteer Form Submission
+        const volunteerForm = document.getElementById('volunteer-form');
+        const volunteerConfirmation = document.getElementById('volunteer-confirmation');
+        
+        volunteerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            // In a real app, you would send the form data to a server
+            // For demo purposes, just show the confirmation message
+            volunteerForm.reset();
+            volunteerConfirmation.classList.remove('hidden');
+            
+            // Hide confirmation after 5 seconds
+            setTimeout(() => {
+                volunteerConfirmation.classList.add('hidden');
+            }, 5000);
+        });
+        
+        // Alert Subscription
+        const subscribeAlerts = document.getElementById('subscribe-alerts');
+        const alertLocation = document.getElementById('alert-location');
+        const alertConfirmation = document.getElementById('alert-confirmation');
+        const alertLocationConfirm = document.getElementById('alert-location-confirm');
+        
+        subscribeAlerts.addEventListener('click', () => {
+            if (alertLocation.value.trim() !== '') {
+                alertLocationConfirm.textContent = alertLocation.value;
+                alertConfirmation.classList.remove('hidden');
+                
+                // Hide confirmation after 5 seconds
+                setTimeout(() => {
+                    alertConfirmation.classList.add('hidden');
+                }, 5000);
+                
+                // Clear the input
+                alertLocation.value = '';
+            }
+        });
+        
+        // Sample Alerts Data
+        const alertsData = [
+            {
+                id: 1,
+                type: 'Hurricane',
+                title: 'Hurricane Eliza Approaching',
+                location: 'Florida Coast',
+                description: 'Hurricane Eliza is expected to make landfall within 48 hours. Prepare for strong winds and heavy rainfall. Evacuation orders may be issued for coastal areas.',
+                severity: 'high',
+                date: 'October 15, 2023'
+            },
+            {
+                id: 2,
+                type: 'Flood',
+                title: 'Flash Flood Warning',
+                location: 'River Valley County',
+                description: 'Heavy rainfall has caused river levels to rise rapidly. Flash flooding is expected in low-lying areas. Move to higher ground if necessary.',
+                severity: 'medium',
+                date: 'October 12, 2023'
+            },
+            {
+                id: 3,
+                type: 'Wildfire',
+                title: 'Ridge Mountain Wildfire',
+                location: 'Western Hills Region',
+                description: 'A wildfire has broken out in the Ridge Mountain area. Several communities are under evacuation orders. Stay tuned for updates from local authorities.',
+                severity: 'high',
+                date: 'October 10, 2023'
+            },
+            {
+                id: 4,
+                type: 'Earthquake',
+                title: 'Earthquake Aftershocks',
+                location: 'Central Valley',
+                description: 'Following yesterday\'s 5.8 magnitude earthquake, several aftershocks have been recorded. Residents are advised to be cautious and stay away from damaged buildings.',
+                severity: 'medium',
+                date: 'October 8, 2023'
+            }
+        ];
+        
+        // Sample Recovery Projects Data
+        const recoveryProjectsData = [
+            {
+                id: 1,
+                title: 'Coastal Community Rebuild',
+                location: 'Gulf Shore',
+                description: 'Rebuilding homes and community centers damaged by Hurricane Maria. Volunteers needed for construction and logistics.',
+                progress: 65,
+                volunteers: 120,
+                startDate: 'September 1, 2023'
+            },
+            {
+                id: 2,
+                title: 'Forest Restoration Project',
+                location: 'Pine Ridge',
+                description: 'Planting new trees and restoring wildlife habitats in areas affected by wildfires. Join our weekend planting sessions.',
+                progress: 40,
+                volunteers: 85,
+                startDate: 'August 15, 2023'
+            },
+            {
+                id: 3,
+                title: 'Flood Defense Infrastructure',
+                location: 'Riverside County',
+                description: 'Building improved flood defenses and drainage systems to protect communities from future flooding events.',
+                progress: 30,
+                volunteers: 65,
+                startDate: 'October 1, 2023'
+            }
+        ];
+        
+        // Populate Alerts
+        function populateAlerts() {
+            const currentAlertsContainer = document.getElementById('current-alerts');
+            currentAlertsContainer.innerHTML = '';
+            
+            alertsData.forEach(alert => {
+                const severityClass = alert.severity === 'high' ? 'bg-red-100 dark:bg-red-900/40 border-red-300 dark:border-red-700' :
+                                     alert.severity === 'medium' ? 'bg-yellow-100 dark:bg-yellow-900/40 border-yellow-300 dark:border-yellow-700' :
+                                     'bg-blue-100 dark:bg-blue-900/40 border-blue-300 dark:border-blue-700';
+                                     
+                const iconClass = alert.type === 'Hurricane' ? 'fa-wind' :
+                                alert.type === 'Flood' ? 'fa-water' :
+                                alert.type === 'Wildfire' ? 'fa-fire' :
+                                alert.type === 'Earthquake' ? 'fa-house-crack' : 'fa-exclamation-triangle';
+                
+                const alertElement = document.createElement('div');
+                alertElement.className = `p-5 rounded-lg border ${severityClass} ${alert.severity === 'high' ? 'alert-pulse' : ''}`;
+                alertElement.innerHTML = `
+                    <div class="flex items-start">
+                        <div class="mr-4 text-xl ${alert.severity === 'high' ? 'text-red-500 dark:text-red-400' : 
+                                                  alert.severity === 'medium' ? 'text-yellow-500 dark:text-yellow-400' : 
+                                                  'text-blue-500 dark:text-blue-400'}">
+                            <i class="fas ${iconClass}"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-lg text-gray-800 dark:text-white">${alert.title}</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">${alert.location} • ${alert.date}</p>
+                            <p class="text-gray-700 dark:text-gray-300 mb-3">${alert.description}</p>
+                            <div class="flex items-center space-x-2">
+                                <span class="px-2 py-1 text-xs font-medium rounded ${
+                                    alert.severity === 'high' ? 'bg-red-200 dark:bg-red-800 text-red-800 dark:text-red-200' : 
+                                    alert.severity === 'medium' ? 'bg-yellow-200 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200' : 
+                                    'bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200'
+                                }">
+                                    ${alert.severity === 'high' ? 'High Severity' : 
+                                    alert.severity === 'medium' ? 'Medium Severity' : 
+                                    'Low Severity'}
+                                </span>
+                                <span class="px-2 py-1 text-xs font-medium rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+                                    ${alert.type}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                currentAlertsContainer.appendChild(alertElement);
+            });
+            
+            // If there are high severity alerts, show the alert badge
+            const highSeverityAlerts = alertsData.filter(alert => alert.severity === 'high');
+            if (highSeverityAlerts.length > 0) {
+                document.getElementById('alert-badge').classList.remove('hidden');
+                document.getElementById('mobile-alert-badge').classList.remove('hidden');
+            }
+        }
+        
+        // Populate Recovery Projects
+        function populateRecoveryProjects() {
+            const recoveryProjectsContainer = document.getElementById('recovery-projects');
+            recoveryProjectsContainer.innerHTML = '';
+            
+            recoveryProjectsData.forEach(project => {
+                const projectElement = document.createElement('div');
+                projectElement.className = 'bg-gray-50 dark:bg-gray-800 rounded-lg overflow-hidden shadow-md';
+                projectElement.innerHTML = `
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2 text-gray-800 dark:text-white">${project.title}</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">
+                            <i class="fas fa-map-marker-alt mr-1"></i> ${project.location} • Started ${project.startDate}
+                        </p>
+                        <p class="text-gray-700 dark:text-gray-300 mb-4">${project.description}</p>
+                        
+                        <div class="mb-3">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="text-gray-600 dark:text-gray-400">Progress</span>
+                                <span class="font-medium text-gray-800 dark:text-gray-200">${project.progress}%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                <div class="bg-success h-2 rounded-full" style="width: ${project.progress}%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                            <i class="fas fa-users mr-1"></i>
+                            <span>${project.volunteers} volunteers participating</span>
+                        </div>
+                        
+                        <button class="mt-4 w-full py-2 px-4 bg-primary hover:bg-primary-dark text-white font-medium rounded transition">
+                            Join This Project
+                        </button>
+                    </div>
+                `;
+                
+                recoveryProjectsContainer.appendChild(projectElement);
+            });
+        }
+        
+        // Simulated real-time alert function
+        function simulateNewAlert() {
+            const newAlertTypes = ['Earthquake', 'Tornado', 'Tsunami', 'Volcanic Eruption'];
+            const newAlertLocations = ['Northern District', 'Eastern Shores', 'Mountain Range', 'Pacific Islands'];
+            const severities = ['low', 'medium', 'high'];
+            
+            // Random values for the new alert
+            const randomType = newAlertTypes[Math.floor(Math.random() * newAlertTypes.length)];
+            const randomLocation = newAlertLocations[Math.floor(Math.random() * newAlertLocations.length)];
+            const randomSeverity = severities[Math.floor(Math.random() * severities.length)];
+            
+            // Current date
+            const currentDate = new Date();
+            const dateString = currentDate.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            // Create new alert object
+            const newAlert = {
+                id: alertsData.length + 1,
+                type: randomType,
+                title: `${randomType} Warning`,
+                location: randomLocation,
+                description: `A ${randomType.toLowerCase()} has been reported in the ${randomLocation} area. Please follow safety protocols and stay tuned for updates.`,
+                severity: randomSeverity,
+                date: dateString
+            };
+            
+            // Add to alerts array and update display
+            alertsData.unshift(newAlert);
+            if (alertsData.length > 6) {
+                alertsData.pop(); // Remove oldest alert if we have more than 6
+            }
+            
+            populateAlerts();
+            
+            // Show notification for high severity alerts
+            if (randomSeverity === 'high') {
+                showAlertNotification(newAlert);
+            }
+        }
+        
+        // Show alert notification
+        function showAlertNotification(alert) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-24 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm';
+            notification.innerHTML = `
+                <div class="flex items-start">
+                    <div class="mr-3 text-xl">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-lg">${alert.title}</h4>
+                        <p class="text-sm mb-2">${alert.location}</p>
+                        <p>${alert.description}</p>
+                        <button class="mt-2 px-3 py-1 bg-white text-red-500 rounded text-sm font-medium">View Details</button>
+                    </div>
+                    <button class="ml-2 text-white hover:text-gray-200 close-notification">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            // Add to DOM
+            document.body.appendChild(notification);
+            
+            // Close button functionality
+            const closeBtn = notification.querySelector('.close-notification');
+            closeBtn.addEventListener('click', () => {
+                notification.remove();
+            });
+            
+            // Auto remove after 8 seconds
+            setTimeout(() => {
+                if (document.body.contains(notification)) {
+                    notification.remove();
+                }
+            }, 8000);
+        }
+        
+        // Initialize data
+        document.addEventListener('DOMContentLoaded', () => {
+            populateAlerts();
+            populateRecoveryProjects();
+            
+            // Simulate a new alert every 30-60 seconds
+            setInterval(simulateNewAlert, Math.random() * 30000 + 30000);
+        });
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80, // Adjust for header height
+                        behavior: 'smooth'
+                    });
+                    
+                    // Close mobile menu if open
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
